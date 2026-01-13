@@ -1,0 +1,8 @@
+selenium/
+screenshots/
+.github/
+*token.json
+*token_drive.json
+*credencials.json
+
+*__pycache__/
