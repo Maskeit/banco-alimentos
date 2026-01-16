@@ -25,8 +25,9 @@ class GoogleSheetsService:
             token_path: Ruta donde se guardará el token de autenticación
         """
         if credentials_path is None:
-            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            credentials_path = os.path.join(script_dir, "..", "credencials.json")
+            # Ruta a la raíz del proyecto: core/services/google_sheets_service.py -> raíz
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            credentials_path = os.path.join(project_root, "credencials.json")
         
         if token_path is None:
             script_dir = os.path.dirname(os.path.abspath(__file__))

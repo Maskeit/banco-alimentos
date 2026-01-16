@@ -4,5 +4,7 @@ screenshots/
 *token.json
 *token_drive.json
 *credencials.json
-
+*credentials.json
 *__pycache__/
+venv/
+prompt.md

@@ -1,25 +1,20 @@
 """
 API REST para el sistema Banco de Alimentos.
-Expone endpoints para ser consumidos por n8n via webhooks.
+Expone endpoints para buscar aliados en documentos y leer Google Sheets.
 """
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 import sys
 
-# Agregar el directorio raíz al path para imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.services import (
-    GoogleSheetsService, 
-    GoogleDriveService, 
-    ComparisonService,
-)
+from core.services import GoogleSheetsService, GoogleDriveService, ComparisonService
+from config import API_HOST, API_PORT, API_DEBUG
 
 app = Flask(__name__)
-CORS(app)  # Habilitar CORS para n8n
+CORS(app)
 
-# Inicializar servicios (se reutilizan entre requests)
 sheets_service = GoogleSheetsService()
 drive_service = GoogleDriveService()
 comparison_service = ComparisonService(sheets_service, drive_service)
@@ -27,81 +22,56 @@ comparison_service = ComparisonService(sheets_service, drive_service)
 
 @app.route('/', methods=['GET'])
 def health_check():
-    """Endpoint de health check."""
-    return jsonify({
-        'status': 'ok',
-        'service': 'Banco de Alimentos API',
-        'version': '1.0.0'
-    })
+    """Health check del servicio."""
+    return jsonify({'status': 'ok', 'service': 'Banco de Alimentos API', 'version': '1.0.0'})
 
 
-@app.route('/api/compare-lists', methods=['POST'])
-def compare_lists():
+@app.route('/api/search-in-document', methods=['POST'])
+def search_in_document():
     """
-    Endpoint para comparar dos listas de Google Sheets con screenshots.
+    Busca nombres de una lista en un Google Sheet.
+    Lee la lista B (aliados) y busca cada nombre en el documento A con Cmd+F.
+    Toma screenshot de cada búsqueda y guarda en carpeta local.
     
-    Request Body (JSON):
+    Body JSON esperado:
     {
-        "list_a_id": "ID_o_URL_de_Google_Sheets_A",
-        "list_a_range": "Sheet1!A:A",
-        "list_b_id": "ID_o_URL_de_Google_Sheets_B",
-        "list_b_range": "Sheet1!B:B",
-        "drive_folder": "Nombre de carpeta o ID/URL de carpeta Drive (opcional)",
-        "search_url_template": "https://example.com/search?q={name} (opcional)"
-    }
-    
-    Response:
-    {
-        "status": "completed",
-        "matches_count": 3,
-        "matches": ["nombre1", "nombre2", "nombre3"],
-        "successful": 3,
-        "failed": 0,
-        "results": {...}
+        "list_b_id": "ID_DEL_GOOGLE_SHEET",
+        "list_b_range": "nombre_hoja!A2:A",
+        "document_a_url": "https://...",
+        "auth_wait_seconds": 15  (opcional - segundos para loguearse)
     }
     """
     try:
-        # Validar request
         data = request.get_json()
         
         if not data:
-            return jsonify({
-                'status': 'error',
-                'message': 'No se recibieron datos JSON'
-            }), 400
+            return jsonify({'status': 'error', 'message': 'No se recibieron datos JSON'}), 400
         
-        # Validar campos requeridos
-        required_fields = ['list_a_id', 'list_a_range', 'list_b_id', 'list_b_range']
-        missing_fields = [field for field in required_fields if field not in data]
+        required_fields = ['list_b_id', 'list_b_range', 'document_a_url']
+        missing_fields = [f for f in required_fields if f not in data]
         
         if missing_fields:
-            return jsonify({
-                'status': 'error',
-                'message': f'Campos requeridos faltantes: {", ".join(missing_fields)}'
-            }), 400
+            return jsonify({'status': 'error', 'message': f'Campos faltantes: {", ".join(missing_fields)}'}), 400
         
-        # Extraer parámetros
-        list_a_id = data['list_a_id']
-        list_a_range = data['list_a_range']
         list_b_id = data['list_b_id']
         list_b_range = data['list_b_range']
-        drive_folder = data.get('drive_folder', 'Banco Alimentos - Coincidencias')
-        search_url_template = data.get('search_url_template', None)
+        document_a_url = data['document_a_url']
+        auth_wait_seconds = data.get('auth_wait_seconds', None)  # Opcional
         
         print(f"\n{'='*60}")
-        print(f"Nueva solicitud recibida de n8n")
-        print(f"Lista A: {list_a_id} - {list_a_range}")
-        print(f"Lista B: {list_b_id} - {list_b_range}")
+        print(f"Nueva solicitud de búsqueda recibida")
+        print(f"Lista B: {list_b_id}")
+        print(f"Rango: {list_b_range}")
+        print(f"Documento A: {document_a_url[:80]}...")
+        if auth_wait_seconds:
+            print(f"Tiempo de autenticación: {auth_wait_seconds}s")
         print(f"{'='*60}\n")
         
-        # Ejecutar workflow
-        result = comparison_service.run_comparison_workflow(
-            list_a_id=list_a_id,
-            list_a_range=list_a_range,
+        result = comparison_service.search_names_in_document(
             list_b_id=list_b_id,
             list_b_range=list_b_range,
-            drive_folder=drive_folder,
-            search_url_template=search_url_template
+            document_a_url=document_a_url,
+            auth_wait_seconds=auth_wait_seconds
         )
         
         return jsonify(result), 200
@@ -110,46 +80,25 @@ def compare_lists():
         print(f"❌ Error en endpoint: {e}")
         import traceback
         traceback.print_exc()
-        
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @app.route('/api/read-sheet', methods=['POST'])
 def read_sheet():
-    """
-    Endpoint para leer un rango de Google Sheets.
-    
-    Request Body (JSON):
-    {
-        "spreadsheet_id": "ID_de_Google_Sheets",
-        "range": "Sheet1!A:B"
-    }
-    """
+    """Leer un rango de Google Sheets."""
     try:
         data = request.get_json()
         
         if not data or 'spreadsheet_id' not in data or 'range' not in data:
-            return jsonify({
-                'status': 'error',
-                'message': 'Se requieren spreadsheet_id y range'
-            }), 400
+            return jsonify({'status': 'error', 'message': 'Se requieren spreadsheet_id y range'}), 400
         
         values = sheets_service.read_range(data['spreadsheet_id'], data['range'])
         
-        return jsonify({
-            'status': 'success',
-            'row_count': len(values),
-            'values': values
-        }), 200
+        return jsonify({'status': 'success', 'row_count': len(values), 'values': values}), 200
     
     except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 
 if __name__ == "__main__":
     print("\n" + "="*60)
@@ -157,11 +106,10 @@ if __name__ == "__main__":
     print("="*60)
     print("Endpoints disponibles:")
     print("  GET  /                     - Health check")
-    print("  POST /api/compare-lists    - Comparar listas y procesar coincidencias")
+    print("  POST /api/search-in-document - Buscar aliados en documento")
     print("  POST /api/read-sheet       - Leer datos de Google Sheets")
-    print("="*60 + "\n")
+    print("="*60)
+    print(f"\n📍 Servidor: http://{API_HOST}:{API_PORT}")
+    print(f"🔧 Debug: {API_DEBUG}\n")
     
-    # Ejecutar servidor Flask
-    # Para desarrollo: host='127.0.0.1', debug=True
-    # Para producción con n8n: host='0.0.0.0', debug=False
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host=API_HOST, port=API_PORT, debug=API_DEBUG)

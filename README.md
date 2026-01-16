@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configurar credenciales de Google
-- Coloca tu archivo `credencials.json` en la raíz del proyecto
+- Coloca tu archivo `credencials.json` en la raíz del proyecto, es lo que contiene un json que empieza con "installed"
 - Debe ser una aplicación de escritorio (Desktop app) de Google Cloud Console
 - Scopes necesarios:
   - `https://www.googleapis.com/auth/spreadsheets.readonly`
@@ -32,6 +32,108 @@ La API estará disponible en `http://127.0.0.1:5000`
 
 ### `GET /`
 Health check del servicio.
+
+### `POST /api/search-in-document` ⭐ (PRINCIPAL - BUSCAR EN DOCUMENTO)
+Lee una lista de aliados (lista B) desde un Google Sheet y busca cada nombre en un documento (documento A).
+Toma screenshot de cada búsqueda con Cmd+F para generar evidencia visual.
+
+**Casos de uso:**
+- Verificar si aliados aparecen en una lista negra o documento
+- Generar evidencia visual de búsquedas en documentos grandes
+- Automatizar búsquedas manuales con Cmd+F
+- Validar presencia de nombres en hojas de cálculo
+
+**Parámetros (Body JSON):**
+- `list_b_id` ⭐ (requerido): ID del Google Sheet con la lista de aliados
+- `list_b_range` ⭐ (requerido): Rango en formato "nombre_hoja!A2:A" o "nombre_hoja!A11:A20"
+- `document_a_url` ⭐ (requerido): URL completa del documento donde buscar (puede ser cualquier URL)
+- `auth_wait_seconds` (opcional): Segundos para loguearse manualmente (default: 15 segundos)
+
+**Ejemplo con curl (Terminal):**
+```bash
+curl -X POST http://127.0.0.1:5000/api/search-in-document \
+  -H "Content-Type: application/json" \
+  -d '{
+    "list_b_id": "1soOnhLz6X4opy0de2r6Z6aomKTxY51VxzbUFfn6XeQA",
+    "list_b_range": "abastos!A2:A",
+    "document_a_url": "https://docs.google.com/spreadsheets/d/13tZWqVdIUeOeXozdk0V5R4D78bGl8YjAaqNhrrJv4eE/edit",
+    "auth_wait_seconds": 20
+  }'
+```
+
+**Ejemplo con Postman:**
+1. Crea una nueva request POST
+2. URL: `http://127.0.0.1:5000/api/search-in-document`
+3. Tab **Headers**: Agrega `Content-Type: application/json`
+4. Tab **Body** → Raw → JSON:
+```json
+{
+  "list_b_id": "1soOnhLz6X4opy0de2r6Z6aomKTxY51VxzbUFfn6XeQA",
+  "list_b_range": "abastos!A2:A",
+  "document_a_url": "https://docs.google.com/spreadsheets/d/13tZWqVdIUeOeXozdk0V5R4D78bGl8YjAaqNhrrJv4eE/edit",
+  "auth_wait_seconds": 20
+}
+```
+5. Click **Send**
+
+**Ejemplo con Python:**
+```python
+import requests
+
+response = requests.post(
+    "http://127.0.0.1:5000/api/search-in-document",
+    json={
+        "list_b_id": "1soOnhLz6X4opy0de2r6Z6aomKTxY51VxzbUFfn6XeQA",
+        "list_b_range": "abastos!A2:A",
+        "document_a_url": "https://docs.google.com/spreadsheets/d/13tZWqVdIUeOeXozdk0V5R4D78bGl8YjAaqNhrrJv4eE/edit",
+        "auth_wait_seconds": 20
+    },
+    timeout=600
+)
+
+print(response.json())
+```
+
+**Response (Ejemplo):**
+```json
+{
+  "status": "completed",
+  "total_names": 49,
+  "successful": 49,
+  "failed": 0,
+  "cancelled": false,
+  "results": {
+    "ADAN DE JESUS SERVIN": {
+      "screenshot_path": "screenshots/search_ADAN_DE_JESUS_SERVIN_20260115_143020.png",
+      "status": "success",
+      "timestamp": "2026-01-15T14:30:20.123456"
+    },
+    "ADRIAN JESUS MUNOZ": {
+      "screenshot_path": "screenshots/search_ADRIAN_JESUS_MUNOZ_20260115_143045.png",
+      "status": "success",
+      "timestamp": "2026-01-15T14:30:45.789012"
+    }
+  }
+}
+```
+
+**Flujo de ejecución:**
+1. Se abre Chrome automáticamente y carga el documento
+2. Espera X segundos para que te logues manualmente en Google (configurable con `auth_wait_seconds`)
+3. Para cada nombre en la lista:
+   - Presiona Escape para limpiar búsqueda anterior
+   - Presiona Cmd+F para abrir cuadro de búsqueda
+   - Escribe el nombre
+   - Espera 2 segundos
+   - Toma screenshot (aparezca o no el resultado)
+   - Guarda en carpeta `screenshots/`
+4. Al terminar, cierra el navegador y retorna el resumen
+
+**Notas importantes:**
+- Las screenshots se guardan en la carpeta `screenshots/` (se crea automáticamente)
+- Cada screenshot incluye timestamp para identificar cuándo se tomó
+- Si cancelas con Ctrl+C, el estado retornará `"cancelled": true`
+- El tiempo de autenticación es configurable si necesitas más tiempo para loguearte
 
 ### `POST /api/compare-lists`
 Compara dos listas de Google Sheets, encuentra coincidencias, toma screenshots y los sube a Google Drive.
@@ -156,5 +258,6 @@ rm core/token*.json
 - Instala dependencias: `pip install -r requirements.txt`
 
 ### Selenium no encuentra el navegador
-- Este proyecto usa Safari WebDriver (macOS)
-- Para otros navegadores, instala el driver correspondiente (ChromeDriver, GeckoDriver)
+- Este proyecto usa **Chrome WebDriver** (instalado automáticamente con webdriver-manager)
+- Chrome se abre automáticamente cuando ejecutas `/api/search-in-document`
+- Si tienes problemas, actualiza Chrome a la versión más reciente
