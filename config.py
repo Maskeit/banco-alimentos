@@ -13,7 +13,8 @@ Actualizado: 14 de enero de 2026
 # ════════════════════════════════════════════════════════════════
 
 # ID del Google Sheet con la lista de aliados
-LIST_B_ID = "1soOnhLz6X4opy0de2r6Z6aomKTxY51VxzbUFfn6XeQA"
+DOCUMENT_B_URL = 'https://docs.google.com/spreadsheets/d/1z29BSwk_n3b-27XAhPME30LTslnYO6xiOoTo3c9yX-4/edit?gid=1132855930#gid=1132855930'
+LIST_B_ID = "1z29BSwk_n3b-27XAhPME30LTslnYO6xiOoTo3c9yX-4"
 
 # Nombre de la hoja (sheet) dentro del Google Sheet
 # NOTA: Si tiene espacios o caracteres especiales, se ponen entre comillas simples
@@ -29,10 +30,10 @@ LIST_B_RANGE = "abastos!A2:A"  # Cámbialo a tu nombre de hoja real
 
 # URL completa del documento donde buscar
 # Puede ser Google Sheets, Google Docs, o cualquier URL
-DOCUMENT_A_URL = "https://docs.google.com/spreadsheets/d/13tZWqVdIUeOeXozdk0V5R4D78bGl8YjAaqNhrrJv4eE/edit?gid=0#gid=0"
+DOCUMENT_A_URL = "https://docs.google.com/spreadsheets/d/1caM1BHP1yhiihKtjXdGBrKs0YiwawiIQ1w26xRpsZlU/edit?gid=36637328#gid=36637328"
 
 # ID del Google Sheet (se extrae automáticamente de la URL si lo necesitas)
-DOCUMENT_A_ID = "13tZWqVdIUeOeXozdk0V5R4D78bGl8YjAaqNhrrJv4eE"
+DOCUMENT_A_ID = "1caM1BHP1yhiihKtjXdGBrKs0YiwawiIQ1w26xRpsZlU"
 # ════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN DE CAPTURAS (Screenshots)
 # ════════════════════════════════════════════════════════════════
@@ -65,19 +66,19 @@ DRIVE_TOKEN_FILE = "core/services/token_drive.json"
 # Tipo de navegador para Selenium (Safari, Chrome, Firefox)
 BROWSER_TYPE = "Chrome"  # Chrome es más fácil de usar con Selenium
 
-# Tamaño de ventana
-BROWSER_WIDTH = 1920
-BROWSER_HEIGHT = 1080
+# Tamaño de ventana (fijo para evitar problemas con monitores ultrawide)
+BROWSER_WIDTH = 1280
+BROWSER_HEIGHT = 800
 
 # Timeout para cargar páginas (segundos)
 BROWSER_TIMEOUT = 30
 
 # Pausa después de búsqueda (segundos)
-SEARCH_PAUSE = 2
+SEARCH_PAUSE = 4
 
 # Tiempo de espera para autenticación manual (segundos)
 # Aumenta esto si necesitas más tiempo para loguearte en Google
-AUTH_WAIT_SECONDS = 15  # 15 segundos es suficiente para loguearse
+AUTH_WAIT_SECONDS = 20  # 15 segundos es suficiente para loguearse
 
 # ════════════════════════════════════════════════════════════════
 # LOGGING

@@ -224,8 +224,10 @@ class ComparisonService:
             
             # Paso 2: Inicializar navegador UNA SOLA VEZ
             print("🚀 Iniciando navegador...")
+            from config import BROWSER_WIDTH, BROWSER_HEIGHT
+            
             options = webdriver.ChromeOptions()
-            options.add_argument("--start-maximized")
+            options.add_argument(f"--window-size={BROWSER_WIDTH},{BROWSER_HEIGHT}")
             options.add_argument("--disable-blink-features=AutomationControlled")
             options.add_experimental_option("excludeSwitches", ["enable-automation"])
             options.add_experimental_option('useAutomationExtension', False)

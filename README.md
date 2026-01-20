@@ -6,7 +6,7 @@ API REST para automatización de procesos del Banco de Alimentos usando Google S
 
 ### 1. Activar entorno virtual
 ```bash
-source selenium/bin/activate
+source venv/bin/activate
 ```
 
 ### 2. Instalar dependencias
@@ -21,12 +21,66 @@ pip install -r requirements.txt
   - `https://www.googleapis.com/auth/spreadsheets.readonly`
   - `https://www.googleapis.com/auth/drive.file`
 
-### 4. Ejecutar API
+### 4. Opción A: Ejecutar API solamente
 ```bash
 python app.py
 ```
 
 La API estará disponible en `http://127.0.0.1:5000`
+
+### 4. Opción B: Ejecutar con interfaz Streamlit (RECOMENDADO)
+**Terminal 1 - Inicia el API:**
+```bash
+python app.py
+```
+
+**Terminal 2 - Inicia Streamlit:**
+```bash
+streamlit run streamlit_app.py
+```
+
+Se abrirá automáticamente en `http://localhost:8501`
+
+**Acceso remoto a Streamlit:**
+Si necesitas acceder desde otra máquina:
+```bash
+streamlit run streamlit_app.py --server.address 0.0.0.0 --server.port 8501
+```
+
+Luego accede desde: `http://IP_DE_TU_MAQUINA:8501`
+
+## 🎨 Interfaz Gráfica (Streamlit)
+
+Este proyecto incluye una interfaz web amigable construida con **Streamlit** para simplificar el uso del sistema.
+
+### Características:
+- ✅ Formulario intuitivo para configurar búsquedas
+- ✅ Validación de campos en tiempo real
+- ✅ Prueba de conexión al API
+- ✅ Visualización de resultados en tabla
+- ✅ Descarga de resultados en JSON
+- ✅ Historial de búsquedas
+- ✅ Panel de ayuda integrado
+
+### Ejecutar Streamlit:
+```bash
+# Terminal 1: Inicia el API
+python app.py
+
+# Terminal 2: Inicia Streamlit
+streamlit run streamlit_app.py
+```
+
+Luego abre: **http://localhost:8501**
+
+### Acceso remoto (para múltiples usuarios):
+```bash
+streamlit run streamlit_app.py --server.address 0.0.0.0 --server.port 8501
+```
+
+Acceso desde otro equipo: `http://IP_DE_TU_MAQUINA:8501`
+
+---
 
 ## 📋 Endpoints
 
