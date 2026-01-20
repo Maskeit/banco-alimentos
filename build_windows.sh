@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Script auxiliar para simular build en Windows desde Mac
+# (Informativo - requiere compilar en Windows real)
+
+echo "================================================"
+echo "Banco de Alimentos - Build para Windows"
+echo "================================================"
+echo ""
+echo "⚠️  Nota: Este script debe ejecutarse EN WINDOWS"
+echo ""
+echo "Pasos para Windows:"
+echo ""
+echo "1. Descarga Inno Setup:"
+echo "   https://jrsoftware.org/isdl.php"
+echo ""
+echo "2. Copia el archivo setup.iss a la carpeta del proyecto"
+echo ""
+echo "3. Abre 'Inno Setup Compiler'"
+echo ""
+echo "4. Clic en 'File > Open' y selecciona 'setup.iss'"
+echo ""
+echo "5. Clic en 'Build > Compile'"
+echo ""
+echo "6. El archivo .exe se generará en la carpeta 'installer/'"
+echo ""
+echo "================================================"
+echo ""
+echo "Alternativa (desde línea de comandos en Windows):"
+echo "  iscc.exe setup.iss"
+echo ""
