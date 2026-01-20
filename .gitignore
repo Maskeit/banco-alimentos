@@ -8,3 +8,5 @@ screenshots/
 *__pycache__/
 venv/
 prompt.md
+build/
+dist/
