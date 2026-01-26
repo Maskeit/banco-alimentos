@@ -10,3 +10,6 @@ venv/
 prompt.md
 build/
 dist/
+*.spec
+BancoDeAlimentos-Setup.exe
+installer/

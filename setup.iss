@@ -19,11 +19,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked and SkipIfDoesntExist
 
 [Files]
-Source: "*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs excludedirscontains(__pycache__|*.pyc|venv|.git|.vscode)
+Source: "*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; \
+Excludes: "__pycache__\*;*.pyc;venv\*;.git\*;.vscode\*"
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
+
+Source: "dist\*"; DestDir: "{app}\dist"; Flags: recursesubdirs createallsubdirs
+Source: "run_installed.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]
 Name: "{app}\screenshots"
@@ -56,7 +60,7 @@ begin
   begin
     if MsgBox('Python 3.12 no está instalado. ¿Descargar e instalar?', mbConfirmation, MB_YESNO) = IDYES then
     begin
-      ShellExec('open', 'https://www.python.org/downloads/', '', '', SW_SHOW);
+      ShellExec('open', 'https://www.python.org/downloads/', '', '', SW_SHOWNORMAL, ewNoWait, ErrorCode);
       MsgBox('Por favor instala Python 3.12 y vuelve a ejecutar este instalador.', mbInformation, MB_OK);
       Result := False;
     end
