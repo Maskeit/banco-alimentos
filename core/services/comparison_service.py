@@ -3,6 +3,7 @@ Servicio para comparar listas de nombres entre dos Google Sheets
 y capturar screenshots de coincidencias.
 """
 import os
+import threading
 from datetime import datetime
 from typing import List, Dict, Set, Tuple
 from selenium import webdriver
@@ -33,10 +34,20 @@ class ComparisonService:
         self.sheets_service = sheets_service or GoogleSheetsService()
         self.drive_service = drive_service or GoogleDriveService()
         self.screenshots_dir = screenshots_dir
+        self.stop_event = None  # Threading event para detener búsqueda
         
         # Crear directorio de screenshots si no existe
         if not os.path.exists(screenshots_dir):
             os.makedirs(screenshots_dir)
+    
+    def set_stop_event(self, event: threading.Event):
+        """Establece el evento para detener la búsqueda."""
+        self.stop_event = event
+    
+    def _check_stop_signal(self):
+        """Verifica si se ha solicitado detener la búsqueda."""
+        if self.stop_event and self.stop_event.is_set():
+            raise KeyboardInterrupt("Búsqueda detenida por el usuario")
     
     def compare_lists(self, 
                      list_a_id: str, 
@@ -254,6 +265,9 @@ class ComparisonService:
             # Paso 3: Para cada aliado, buscar en el documento A (mismo navegador)
             for idx, name in enumerate(list_b_names, 1):
                 try:
+                    # Checkear si se solicitó detener
+                    self._check_stop_signal()
+                    
                     print(f"\n{'='*60}")
                     print(f"[{idx}/{len(list_b_names)}] Procesando: {name}")
                     print(f"{'='*60}")

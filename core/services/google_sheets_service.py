@@ -3,12 +3,14 @@ Servicio para interactuar con Google Sheets API.
 """
 import os
 import re
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from config import CREDENTIALS_FILE, SHEETS_TOKEN_FILE
 
 
 class GoogleSheetsService:
@@ -24,19 +26,16 @@ class GoogleSheetsService:
             credentials_path: Ruta al archivo de credenciales OAuth2
             token_path: Ruta donde se guardará el token de autenticación
         """
-        if credentials_path is None:
-            # Ruta a la raíz del proyecto: core/services/google_sheets_service.py -> raíz
-            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            credentials_path = os.path.join(project_root, "credencials.json")
-        
-        if token_path is None:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            token_path = os.path.join(script_dir, "token.json")
-        
-        self.credentials_path = credentials_path
-        self.token_path = token_path
+        self.credentials_path = credentials_path or str(CREDENTIALS_FILE)
+        self.token_path = token_path or str(SHEETS_TOKEN_FILE)
         self.service = None
-        self._authenticate()
+        
+        # Solo autenticar si credenciales existen
+        if Path(self.credentials_path).exists():
+            self._authenticate()
+        else:
+            print(f"⚠️  Credenciales no encontradas en {self.credentials_path}")
+            print("Cárgalas desde Streamlit (pestaña Configuración)")
     
     def _authenticate(self) -> None:
         """Autentica con Google Sheets API y crea el servicio."""

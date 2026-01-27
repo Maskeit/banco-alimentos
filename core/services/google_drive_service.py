@@ -3,6 +3,7 @@ Servicio para interactuar con Google Drive API.
 """
 import os
 import re
+from pathlib import Path
 from typing import Optional, Dict, Any
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -10,12 +11,13 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
+from config import CREDENTIALS_FILE, DRIVE_TOKEN_FILE
 
 
 class GoogleDriveService:
     """Servicio para crear carpetas y subir archivos a Google Drive."""
     
-    SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+    SCOPES = ["https://www.googleapis.com/auth/drive"]
     
     def __init__(self, credentials_path: str = None, token_path: str = None):
         """
@@ -25,19 +27,16 @@ class GoogleDriveService:
             credentials_path: Ruta al archivo de credenciales OAuth2
             token_path: Ruta donde se guardará el token de autenticación
         """
-        if credentials_path is None:
-            # Ruta a la raíz del proyecto: core/services/google_drive_service.py -> raíz
-            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            credentials_path = os.path.join(project_root, "credencials.json")
-        
-        if token_path is None:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            token_path = os.path.join(script_dir, "token_drive.json")
-        
-        self.credentials_path = credentials_path
-        self.token_path = token_path
+        self.credentials_path = credentials_path or str(CREDENTIALS_FILE)
+        self.token_path = token_path or str(DRIVE_TOKEN_FILE)
         self.service = None
-        self._authenticate()
+        
+        # Solo autenticar si credenciales existen
+        if Path(self.credentials_path).exists():
+            self._authenticate()
+        else:
+            print(f"⚠️  Credenciales no encontradas en {self.credentials_path}")
+            print("Cárgalas desde Streamlit (pestaña Configuración)")
     
     def _authenticate(self) -> None:
         """Autentica con Google Drive API y crea el servicio."""
