@@ -63,28 +63,7 @@ USER_DATA_DIR.mkdir(exist_ok=True)
 
 # Rutas a los archivos de credenciales (en carpeta de datos)
 CREDENTIALS_FILE = USER_DATA_DIR / "credentials.json"
-SHEETS_TOKEN_FILE = USER_DATA_DIR / "token.json"
-DRIVE_TOKEN_FILE = USER_DATA_DIR / "token_drive.json"
-
-# ════════════════════════════════════════════════════════════════
-# GOOGLE DRIVE - ESTRUCTURA DE CARPETAS
-# ════════════════════════════════════════════════════════════════
-
-# Carpeta raíz del Banco de Alimentos en Drive
-# Obtén el ID de la URL: https://drive.google.com/drive/folders/AQUI_ESTA_EL_ID
-BANCO_ALIMENTOS_FOLDER_ID = "1_f_RkuvXo41ahx4lQ_F1YD5LG5LCgOtu"
-
-# La estructura será:
-# BANCO_ALIMENTOS/
-#   ├── abastos/
-#   │   ├── ALIADO_1/
-#   │   │   ├── lista_a_20260125.png
-#   │   │   ├── lista_b_20260125.png
-#   │   │   └── lista_c_20260125.png
-#   │   └── ALIADO_2/
-#   ├── campo/
-#   ├── pymes/
-#   └── ...
+TOKEN_FILE = USER_DATA_DIR / "token.json"
 
 # ════════════════════════════════════════════════════════════════
 # NAVEGADOR
